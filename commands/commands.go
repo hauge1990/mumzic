@@ -72,6 +72,29 @@ func CommandDispatch(player *playback.Player, msg string, isPrivate bool, sender
 		joinUserChannel(player, sender)
 	case "uinfo":
 		helper.MsgDispatch(player.Client, isPrivate, sender, player.Client.Self.Hash)
+	case "pause":
+		if err := player.Pause(); err != nil {
+			helper.MsgDispatch(player.Client, isPrivate, sender, "Cannot pause: "+err.Error())
+		} else {
+			helper.MsgDispatch(player.Client, isPrivate, sender, "Paused.")
+		}
+	case "resume", "unpause":
+		if err := player.Resume(); err != nil {
+			helper.MsgDispatch(player.Client, isPrivate, sender, "Cannot resume: "+err.Error())
+		}
+	case "np", "nowplaying":
+		if !player.IsPlaying() && !player.IsPaused() {
+			helper.MsgDispatch(player.Client, isPrivate, sender, "Nothing is playing.")
+		} else {
+			helper.MsgDispatch(player.Client, isPrivate, sender, player.NowPlaying())
+		}
+	case "repeat":
+		toggleRepeat(player, sender, isPrivate)
+	case "remove", "rm":
+		removeFromQueue(player, sender, isPrivate, arg)
+	case "clear":
+		n := player.Playlist.ClearUpcoming()
+		helper.MsgDispatch(player.Client, isPrivate, sender, fmt.Sprintf("Cleared %d track(s) from queue.", n))
 	}
 }
 
@@ -202,6 +225,36 @@ func find(player *playback.Player, sender string, isPrivate bool, arg string) {
 	messages.SaveMoreRows(sender, player.Config.MaxLines, results, output)
 
 	helper.MsgDispatch(player.Client, isPrivate, sender, output.String())
+}
+
+func toggleRepeat(player *playback.Player, sender string, isPrivate bool) {
+	player.IsRepeat = !player.IsRepeat
+	if player.IsRepeat {
+		if player.IsRadio {
+			player.IsRadio = false
+		}
+		helper.MsgDispatch(player.Client, isPrivate, sender, "Repeat: <b>Enabled</b> — current track will loop.")
+	} else {
+		helper.MsgDispatch(player.Client, isPrivate, sender, "Repeat: <b>Disabled</b>.")
+	}
+}
+
+func removeFromQueue(player *playback.Player, sender string, isPrivate bool, arg string) {
+	index, err := strconv.Atoi(arg)
+	if err != nil || index < 0 {
+		helper.MsgDispatch(player.Client, isPrivate, sender, "Usage: <b>remove &lt;#&gt;</b> — use <b>list</b> to see track numbers.")
+		return
+	}
+	if index == 0 {
+		helper.MsgDispatch(player.Client, isPrivate, sender, "Cannot remove the currently playing track. Use <b>skip</b> instead.")
+		return
+	}
+	human, err := player.Playlist.Remove(index)
+	if err != nil {
+		helper.MsgDispatch(player.Client, isPrivate, sender, "Remove failed: "+err.Error())
+		return
+	}
+	helper.MsgDispatch(player.Client, isPrivate, sender, "Removed: <b>"+human+"</b>")
 }
 
 func rand(player *playback.Player, sender string, isPrivate bool, arg string) {

@@ -29,6 +29,7 @@ type Player struct {
 	Playlist playlist.List
 	Volume   float32
 	IsRadio  bool
+	IsRepeat bool
 	Config   *database.Config
 
 	// Syncronization
@@ -126,6 +127,37 @@ func (player *Player) IsPlaying() bool {
 	return player.isPlaying && player.stream != nil && player.stream.State() == gumbleffmpeg.StatePlaying
 }
 
+// IsPaused returns true if the Stream exists and is paused
+func (player *Player) IsPaused() bool {
+	return player.stream != nil && player.stream.State() == gumbleffmpeg.StatePaused
+}
+
+// Pause pauses the current stream
+func (player *Player) Pause() error {
+	if player.stream == nil {
+		return errors.New("nothing is playing")
+	}
+	err := player.stream.Pause()
+	if err != nil {
+		return err
+	}
+	helper.SetComment(player.Client, "Paused.")
+	return nil
+}
+
+// Resume resumes a paused stream
+func (player *Player) Resume() error {
+	if player.stream == nil {
+		return errors.New("nothing to resume")
+	}
+	err := player.stream.Play()
+	if err != nil {
+		return err
+	}
+	helper.SetComment(player.Client, player.NowPlaying())
+	return nil
+}
+
 // PlayCurrent plays the playlist at the current position should the player not already be playing.
 func (player *Player) PlayCurrent() {
 	if !player.Playlist.IsEmpty() && !player.IsPlaying() {
@@ -164,6 +196,11 @@ func (player *Player) WaitForStop() {
 
 	if !shouldContinue {
 		player.markStopped()
+		return
+	}
+
+	if player.IsRepeat {
+		player.PlayCurrent()
 		return
 	}
 

@@ -229,3 +229,25 @@ func (list *List) queueYT(url, human string) bool {
 func (list *List) Count() int {
 	return list.Size() - list.Position
 }
+
+// Remove removes the track at the given queue index (0 = currently playing).
+// Returns the removed track's human title or an error.
+func (list *List) Remove(queueIndex int) (string, error) {
+	absIndex := list.Position + queueIndex
+	if absIndex < list.Position || absIndex >= list.Size() {
+		return "", errors.New("invalid queue index")
+	}
+	human := list.Playlist[absIndex][1]
+	list.Playlist = append(list.Playlist[:absIndex], list.Playlist[absIndex+1:]...)
+	return human, nil
+}
+
+// ClearUpcoming removes all queued tracks after the currently playing one.
+func (list *List) ClearUpcoming() int {
+	if !list.HasNext() {
+		return 0
+	}
+	removed := list.Size() - list.Position - 1
+	list.Playlist = list.Playlist[:list.Position+1]
+	return removed
+}

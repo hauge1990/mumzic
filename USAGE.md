@@ -15,18 +15,24 @@ Note: PMing the bot currently doesn't have the prefix for commands, so **!summon
 | random/rand [#]              | Add Random Tracks                                  | Random track(s) from filesystem                                       |
 | radio                        | Starts/Stops "Radio Mode"                          | Shuffles through local media files continously                        |
 | stop                         | Stop playing track                                 | If you use !play with no arguments; will restart track from beginning |
+| pause                        | Pause the current track                            |                                                                       |
+| resume/unpause               | Resume a paused track                              |                                                                       |
 | skip/next [#]                | skip # amount of tracks                            | Default 1                                                             |
 | playnow  [ID or URL]         | Play provided ID or URL immediately                |                                                                       |
 | playnext/addnext [ID or URL] | Add the provided ID or URL after the current track |                                                                       |
+| repeat                       | Toggle repeat of the current track                 | Disables radio mode when enabled                                      |
+| np/nowplaying                | Show what is currently playing                     |                                                                       |
 
 
 ### Playlist
-| Command                               | Info                                     | Notes |
-|---------------------------------------|------------------------------------------|-------|
-| list                                  | Show current track list                  |       |
-| search/find [Arist Name / Track Name] | Find tracks from local files             |       |
-| more                                  | Show additional results from list/search |       |
-| less                                  | Show previous results from list/search   |       |
+| Command                               | Info                                     | Notes                              |
+|---------------------------------------|------------------------------------------|------------------------------------|
+| list                                  | Show current track list                  |                                    |
+| search/find [Arist Name / Track Name] | Find tracks from local files             |                                    |
+| more                                  | Show additional results from list/search |                                    |
+| less                                  | Show previous results from list/search   |                                    |
+| remove/rm [#]                         | Remove a track from the queue by number  | Use !list to see track numbers     |
+| clear                                 | Clear all upcoming tracks from the queue | Does not affect currently playing  |
 
 ### Audio
 | Command          | Info                                  | Notes                                                                     |
